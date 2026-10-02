@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantDetector Pro - Advanced AI Health Intelligence</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg-main: #0a110e;
+      --card-bg: #121c18;
+      --card-border: #1d2c26;
+      --input-bg: #0d1512;
+      --primary-green: #10b981;
+      --primary-hover: #059669;
+      --warning-amber: #f59e0b;
+      --danger-red: #ef4444;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --badge-bg: rgba(16, 185, 129, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-green);
+    }
+
+    .brand-subtitle { font-size: 12px; color: var(--text-muted); font-weight: normal; display: block; }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--badge-bg);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--primary-green);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--primary-green);
+    }
+
+    .metrics-banner {
+      width: 100%;
+      max-width: 1100px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .metrics-group { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .metric-chip {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 8px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .metric-value { font-weight: bold; color: var(--primary-green); }
+
+    .accuracy-meter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      padding: 8px 14px;
+      border-radius: 10px;
+    }
+
+    .grid-container {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 850px) {
+      .grid-container { grid-template-columns: 1fr; }
+      .metrics-banner { flex-direction: column; align-items: flex-start; }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel-header {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--primary-green);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--card-border);
+      background: var(--input-bg);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+    }
+
+    .upload-box:hover { border-color: var(--primary-green); }
+    .upload-icon { font-size: 30px; margin-bottom: 6px; }
+    .upload-text { font-size: 14px; font-weight: 600; }
+    .upload-subtext { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 1px solid var(--primary-green);
+      display: none;
+    }
+
+    .form-field { display: flex; flex-direction: column; gap: 8px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { font-size: 13px; font-weight: 600; color: #d1d5db; }
+    
+    select, input[type="text"], textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    select:focus, input:focus, textarea:focus { border-color: var(--primary-green); }
+
+    .symptom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .checkbox-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-btn input { accent-color: var(--primary-green); cursor: pointer; }
+
+    .slider-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .slider-status { font-weight: bold; color: var(--primary-green); }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary-green);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .light-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .light-card {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .light-card.selected {
+      border-color: var(--primary-green);
+      background: var(--badge-bg);
+      color: var(--primary-green);
+      font-weight: bold;
+    }
+
+    .temp-control { display: flex; align-items: center; gap: 12px; }
+    .temp-btn {
+      width: 36px;
+      height: 36px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .temp-display {
+      flex: 1;
+      text-align: center;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 8px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary-green);
+      color: var(--bg-main);
+      font-weight: bold;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover { background: var(--primary-hover); }
+
+    .dashboard-panel {
+      width: 100%;
+      max-width: 1100px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+    }
+
+    .dashboard-header {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-green);
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 1000px) {
+      .dashboard-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .result-card {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 10px;
+    }
+
+    .result-card.urgent-card {
+      border: 1px solid var(--danger-red);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .result-title { font-size: 12px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .urgent-title { color: var(--danger-red); }
+
+    .result-body { font-size: 13px; line-height: 1.6; color: var(--text-main); }
+    .result-body ul, .result-body ol { padding-left: 16px; }
+    .result-body li { margin-bottom: 6px; }
+
+    .alert-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .tag-healthy { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .tag-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .tag-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    .audio-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-audio {
+      flex: 1;
+      min-width: 180px;
+      padding: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--primary-green);
+      color: var(--primary-green);
+      font-weight: bold;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-audio:hover { background: var(--badge-bg); }
+
+    .btn-stop {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger-red);
+      color: var(--danger-red);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      🪴 PlantDetector Pro
+      <span class="brand-subtitle">Precision Health & Diagnostic Intelligence</span>
+    </div>
+    <div class="live-status">
+      <span class="status-dot"></span> System Ready
+    </div>
+  </header>
+
+  <section class="metrics-banner">
+    <div class="metrics-group">
+      <div class="metric-chip">
+        <span>📸 Photo Status:</span>
+        <span class="metric-value" id="photoChip">Pending</span>
+      </div>
+      <div class="metric-chip">
+        <span>🌿 Species:</span>
+        <span class="metric-value" id="speciesChip">Pothos</span>
+      </div>
+      <div class="metric-chip">
+        <span>🗓 Season:</span>
+        <span class="metric-value" id="seasonChip">Spring/Summer</span>
+      </div>
+    </div>
+
+    <div class="accuracy-meter">
+      <span style="font-size: 12px; color: var(--text-muted);">Diagnostic Precision:</span>
+      <span style="font-weight: bold; color: var(--primary-green); font-size: 15px;" id="accuracyVal">65%</span>
+    </div>
+  </section>
+
+  <div class="grid-container">
+
+    <div class="panel">
+      <div class="panel-header">📷 1. Plant Identification</div>
+      
+      <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+        <img id="imagePreview" class="preview-img" alt="Plant Preview">
+        <div class="upload-icon" id="uploadIcon">🍃</div>
+        <div class="upload-text" id="uploadText">Upload Leaf / Plant Photo</div>
+        <div class="upload-subtext" id="fileName">JPG, PNG, WEBP - Max 15MB</div>
+        <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFile(this)">
+      </div>
+
+      <div class="form-field">
+        <label for="speciesSearch">Filter & Select Plant Species</label>
+        <input type="text" id="speciesSearch" placeholder="Type to filter 100+ species..." oninput="filterSpecies()">
+        <select id="species" size="5" style="height: 120px; margin-top: 4px;" onchange="updateAccuracy()">
+          <optgroup label="Popular Houseplants">
+            <option value="Money Plant (Pothos)" selected>Money Plant / Golden Pothos</option>
+            <option value="Snake Plant">Snake Plant (Sansevieria)</option>
+            <option value="Monstera Deliciosa">Monstera Deliciosa</option>
+            <option value="Monstera Adansonii">Monstera Adansonii</option>
+            <option value="Peace Lily">Peace Lily (Spathiphyllum)</option>
+            <option value="ZZ Plant">ZZ Plant (Zamioculcas zamiifolia)</option>
+            <option value="Spider Plant">Spider Plant</option>
+            <option value="Fiddle Leaf Fig">Fiddle Leaf Fig (Ficus lyrata)</option>
+            <option value="Rubber Plant">Rubber Plant (Ficus elastica)</option>
+            <option value="Chinese Evergreen">Chinese Evergreen (Aglaonema)</option>
+            <option value="Boston Fern">Boston Fern</option>
+            <option value="Calathea Rattlesnake">Calathea Rattlesnake</option>
+            <option value="Prayer Plant">Prayer Plant (Maranta)</option>
+            <option value="Philodendron Heartleaf">Philodendron Heartleaf</option>
+            <option value="Pilea Peperomioides">Pilea Peperomioides</option>
+            <option value="Jade Plant">Jade Plant</option>
+            <option value="Aloe Vera">Aloe Vera</option>
+          </optgroup>
+          <optgroup label="Herbs & Edibles">
+            <option value="Sweet Basil">Sweet Basil</option>
+            <option value="Mint / Peppermint">Mint / Peppermint</option>
+            <option value="Rosemary">Rosemary</option>
+            <option value="Thyme">Thyme</option>
+            <option value="Cherry Tomato Plant">Cherry Tomato Plant</option>
+            <option value="Chili / Pepper Plant">Chili / Pepper Plant</option>
+          </optgroup>
+          <optgroup label="Flowering & Outdoor">
+            <option value="Orchid (Phalaenopsis)">Orchid (Phalaenopsis)</option>
+            <option value="African Violet">African Violet</option>
+            <option value="Hibiscus">Hibiscus</option>
+            <option value="Rose (Indoor/Miniature)">Rose (Indoor/Miniature)</option>
+            <option value="Lavender">Lavender</option>
+            <option value="Hydrangea">Hydrangea</option>
+            <option value="Bougainvillea">Bougainvillea</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="panel-header">🔍 2. Visual Leaf Symptoms</div>
+      <div class="symptom-grid">
+        <label class="checkbox-btn"><input type="checkbox" class="symptom-chk" value="Yellowing Leaves" onchange="updateAccuracy()"> Yellowing Leaves</label>
+        <label class="checkbox-btn"><input type="checkbox" class="symptom-chk" value="Brown Tips/Edges" onchange="updateAccuracy()"> Brown Tips/Edges</label>
+        <label class="checkbox-btn"><input type="checkbox" class="symptom-chk" value="Drooping or Wilting" onchange="updateAccuracy()"> Drooping/Wilting</label>
+        <label class="checkbox-btn"><input type="checkbox" class="symptom-chk" value="Crisp or Curling Leaves" onchange="updateAccuracy()"> Crisp/Curling</label>
+        <label class="checkbox-btn"><input type="checkbox" class="symptom-chk" value="White Powder or Webbing" onchange="updateAccuracy()"> White Powder/Webs</label>
+        <label class="checkbox-btn"><input type="checkbox" class="symptom-chk" value="Black or Brown Spots" onchange="updateAccuracy()"> Dark Spots</label>
+      </div>
+
+      <div class="form-field">
+        <label for="notes">Additional Observations</label>
+        <textarea id="notes" rows="2" placeholder="e.g., Soft stems, slow growth, recently repotted..." oninput="updateAccuracy()"></textarea>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">🌡️ 3. Growth Environment & Potting</div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="potType">Pot / Soil Type</label>
+          <select id="potType" onchange="updateAccuracy()">
+            <option value="Standard Potting Mix">Standard Potting Mix</option>
+            <option value="Succult / Cactus Mix">Cactus / Succulent Mix</option>
+            <option value="Heavy Clay / Dense Soil">Dense / Heavy Soil</option>
+            <option value="Coco Coir / Peat Base">Coco Coir / Peat Moss</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="drainage">Container Drainage</label>
+          <select id="drainage" onchange="updateAccuracy()">
+            <option value="Has Drainage Holes">Holes Present (Good)</option>
+            <option value="No Drainage Holes">No Drainage Holes (Risk)</option>
+            <option value="Self-Watering Pot">Self-Watering Pot</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="pests">Pest Inspection</label>
+          <select id="pests" onchange="updateAccuracy()">
+            <option value="None Observed">None Observed</option>
+            <option value="Spider Mites">Spider Mites (Webbing)</option>
+            <option value="Mealybugs">Mealybugs (Cottony Tufts)</option>
+            <option value="Fungus Gnats">Fungus Gnats (Soil Flies)</option>
+            <option value="Scale Insects">Scale Insects (Hard Shells)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="season">Current Season</label>
+          <select id="season" onchange="updateSeason(this.value)">
+            <option value="Spring/Summer">Spring / Summer (Growing)</option>
+            <option value="Autumn/Winter">Autumn / Winter (Dormant)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <div class="slider-header">
+          <label>Soil Moisture</label>
+          <span class="slider-status" id="moistureTxt">50% - Moderate</span>
+        </div>
+        <input type="range" id="moisture" min="0" max="100" value="50" oninput="updateMoisture(this.value)">
+      </div>
+
+      <div class="form-field">
+        <label>Sunlight Exposure</label>
+        <div class="light-options">
+          <div class="light-card" id="light-low" onclick="selectLight('Low')">
+            ☁️ Low<br><span style="font-size: 10px; color: var(--text-muted);">Shade</span>
+          </div>
+          <div class="light-card selected" id="light-med" onclick="selectLight('Medium')">
+            ⛅ Medium<br><span style="font-size: 10px;">Bright Indirect</span>
+          </div>
+          <div class="light-card" id="light-high" onclick="selectLight('High')">
+            ☀️ High<br><span style="font-size: 10px; color: var(--text-muted);">Direct Sun</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <div class="slider-header">
+          <label>Humidity Levels</label>
+          <span class="slider-status" id="humidityTxt">55% - Optimal</span>
+        </div>
+        <input type="range" id="humidity" min="0" max="100" value="55" oninput="updateHumidity(this.value)">
+      </div>
+
+      <div class="form-field">
+        <div class="slider-header">
+          <label>Ambient Temperature (°C)</label>
+          <span class="slider-status">18-28°C Optimal Range</span>
+        </div>
+        <div class="temp-control">
+          <button class="temp-btn" onclick="adjustTemp(-1)">-</button>
+          <div class="temp-display" id="tempVal">24°C</div>
+          <button class="temp-btn" onclick="adjustTemp(1)">+</button>
+        </div>
+      </div>
+
+      <button class="btn-action" onclick="runDiagnosis()">Execute Precision Diagnosis</button>
+    </div>
+
+  </div>
+
+  <div class="dashboard-panel" id="dashboard">
+    <div class="dashboard-header">
+      <span>DIAGNOSIS & CARE DASHBOARD</span>
+      <span id="diagnosticTag"></span>
+    </div>
+
+    <!-- 4 Column Layout -->
+    <div class="dashboard-grid">
+      
+      <!-- Column 1: Primary Diagnosis -->
+      <div class="result-card">
+        <div class="result-title">Primary Diagnosis</div>
+        <div class="result-body" id="diagOutput">Analyzing inputs...</div>
+      </div>
+
+      <!-- Column 2: Immediate Urgent Protocol -->
+      <div class="result-card urgent-card">
+        <div class="result-title urgent-title">🚨 Immediate Protocol (Urgent)</div>
+        <div class="result-body" id="urgentOutput">No emergency steps required.</div>
+      </div>
+
+      <!-- Column 3: Risk & Root Causes -->
+      <div class="result-card">
+        <div class="result-title">Risk & Root Causes</div>
+        <div class="result-body" id="causeOutput">Calculating risks...</div>
+      </div>
+
+      <!-- Column 4: Targeted Care Plan -->
+      <div class="result-card">
+        <div class="result-title">Targeted Care Plan</div>
+        <div class="result-body" id="careOutput">Generating care steps...</div>
+      </div>
+
+    </div>
+
+    <div class="audio-controls">
+      <button class="btn-audio" onclick="readSummaryAloud()">⚡ Read Summary Aloud</button>
+      <button class="btn-audio" onclick="readFullReportAloud()">🔊 Read Full Report Aloud</button>
+      <button class="btn-audio btn-stop" id="stopBtn" onclick="stopAudio()">⏹ Stop Voice Readout</button>
+    </div>
+  </div>
+
+  <script>
+    let currentTemp = 24;
+    let selectedLight = "Medium";
+    let selectedFile = null;
+    let fullReportScript = "";
+    let summaryReportScript = "";
+
+    function filterSpecies() {
+      const input = document.getElementById('speciesSearch').value.toLowerCase();
+      const select = document.getElementById('species');
+      const options = select.getElementsByTagName('option');
+
+      for (let i = 0; i < options.length; i++) {
+        const txt = options[i].text.toLowerCase();
+        options[i].style.display = txt.includes(input) ? "" : "none";
+      }
+    }
+
+    function handleFile(input) {
+      if (input.files && input.files[0]) {
+        selectedFile = input.files[0];
+        
+        // Render Image Preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.getElementById('imagePreview');
+          img.src = e.target.result;
+          img.style.display = 'block';
+          document.getElementById('uploadIcon').style.display = 'none';
+          document.getElementById('uploadText').innerText = "Change Photo";
+        };
+        reader.readAsDataURL(selectedFile);
+
+        document.getElementById('fileName').innerText = selectedFile.name;
+        document.getElementById('photoChip').innerText = "Uploaded ✓";
+        updateAccuracy();
+      }
+    }
+
+    function updateMoisture(val) {
+      let status = "Moderate";
+      if (val < 30) status = "Dry - Water Urgently";
+      if (val > 75) status = "Saturated - Waterlogged";
+      document.getElementById('moistureTxt').innerText = `${val}% - ${status}`;
+      updateAccuracy();
+    }
+
+    function updateHumidity(val) {
+      let status = "Optimal";
+      if (val < 35) status = "Low / Dry Air";
+      if (val > 75) status = "High Humidity";
+      document.getElementById('humidityTxt').innerText = `${val}% - ${status}`;
+      updateAccuracy();
+    }
+
+    function selectLight(level) {
+      selectedLight = level;
+      document.getElementById('light-low').classList.remove('selected');
+      document.getElementById('light-med').classList.remove('selected');
+      document.getElementById('light-high').classList.remove('selected');
+
+      if (level === 'Low') document.getElementById('light-low').classList.add('selected');
+      if (level === 'Medium') document.getElementById('light-med').classList.add('selected');
+      if (level === 'High') document.getElementById('light-high').classList.add('selected');
+      updateAccuracy();
+    }
+
+    function updateSeason(val) {
+      document.getElementById('seasonChip').innerText = val;
+      updateAccuracy();
+    }
+
+    function adjustTemp(delta) {
+      currentTemp += delta;
+      document.getElementById('tempVal').innerText = `${currentTemp}°C`;
+      updateAccuracy();
+    }
+
+    function updateAccuracy() {
+      let accuracy = 50;
+      if (selectedFile) accuracy += 15;
+      
+      const checkedSymptoms = document.querySelectorAll('.symptom-chk:checked').length;
+      accuracy += checkedSymptoms * 5;
+
+      const notes = document.getElementById('notes').value.trim();
+      if (notes.length > 5) accuracy += 10;
+
+      if (accuracy > 98) accuracy = 98;
+      document.getElementById('accuracyVal').innerText = `${accuracy}%`;
+      document.getElementById('speciesChip').innerText = document.getElementById('species').value.split(' ')[0];
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window) || !text) return;
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+
+      const voices = window.speechSynthesis.getVoices();
+      const naturalVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google')));
+      if (naturalVoice) utterance.voice = naturalVoice;
+
+      document.getElementById('stopBtn').style.display = 'inline-block';
+      utterance.onend = () => { document.getElementById('stopBtn').style.display = 'none'; };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function readSummaryAloud() {
+      speakText(summaryReportScript);
+    }
+
+    function readFullReportAloud() {
+      speakText(fullReportScript);
+    }
+
+    function stopAudio() {
+      window.speechSynthesis.cancel();
+      document.getElementById('stopBtn').style.display = 'none';
+    }
+
+    function runDiagnosis() {
+      stopAudio();
+
+      const species = document.getElementById('species').value;
+      const moisture = parseInt(document.getElementById('moisture').value);
+      const humidity = parseInt(document.getElementById('humidity').value);
+      const drainage = document.getElementById('drainage').value;
+      const pests = document.getElementById('pests').value;
+      const season = document.getElementById('season').value;
+
+      const symptoms = Array.from(document.querySelectorAll('.symptom-chk:checked')).map(cb => cb.value);
+
+      let statusTagText = "HEALTHY";
+      let statusTag = `<span class="alert-tag tag-healthy">${statusTagText}</span>`;
+      let diag = "Plant appears structurally stable with balanced parameters.";
+      let urgentSteps = [];
+      let causes = ["Environmental conditions are within normal limits."];
+      let care = ["Maintain regular monitoring and standard watering cycles."];
+
+      // Dynamic Emergency Protocol Logic
+      if (pests !== "None Observed") {
+        statusTagText = "PEST INFESTATION";
+        statusTag = `<span class="alert-tag tag-danger">${statusTagText}</span>`;
+        diag = `Active infestation of ${pests} detected.`;
+        urgentSteps.push(`Move ${species} into quarantine immediately away from other houseplants.`);
+        urgentSteps.push(`Wipe down infected foliage with neem oil or diluted isopropyl alcohol.`);
+        causes.push(`Pest colonies are sapping plant sap and vital nutrients.`);
+        care.push(`Spray with insecticidal soap solution every 5 days for 3 weeks.`);
+      }
+
+      if (drainage === "No Drainage Holes" && moisture > 60) {
+        statusTagText = "ROOT ROT RISK";
+        statusTag = `<span class="alert-tag tag-danger">${statusTagText}</span>`;
+        diag = "Critical root saturation with imminent risk of anaerobic Root Rot.";
+        urgentSteps.push("Stop watering immediately.");
+        urgentSteps.push("Remove plant from pot, prune away black or mushy roots, and repot in fresh dry soil with drainage holes.");
+        causes.push("Water cannot drain from pot base, suffocating roots and harboring root rot fungi.");
+        care.push("Keep soil barely damp for 2 weeks while roots recover.");
+      } else if (moisture > 75) {
+        statusTagText = "OVERWATERED";
+        statusTag = `<span class="alert-tag tag-warning">${statusTagText}</span>`;
+        diag = "Soil moisture level is excessively high.";
+        urgentSteps.push("Tilt pot to drain any pooled surface water and elevate to improve base airflow.");
+        causes.push("Frequency of watering exceeds soil evaporation rate.");
+        care.push("Hold off watering until top 2 to 3 inches of soil become completely dry.");
+      } else if (moisture < 25) {
+        statusTagText = "UNDERWATERED";
+        statusTag = `<span class="alert-tag tag-warning">${statusTagText}</span>`;
+        diag = "Severe dehydration stress detected in root system.";
+        urgentSteps.push("Give plant an immediate thorough bottom-soak in room-temperature water for 20 minutes.");
+        causes.push("Extended duration without sufficient soil moisture.");
+        care.push("Resume regular watering cycle once soil is rehydrated.");
+      }
+
+      if (symptoms.includes("Brown Tips/Edges") && humidity < 40) {
+        causes.push("Low relative air humidity causing leaf tip crisping.");
+        care.push("Group plants together or introduce a room humidifier nearby.");
+      }
+
+      if (currentTemp < 15) {
+        urgentSteps.push("Relocate plant immediately away from cold drafts, exterior doors, or uninsulated windows.");
+        causes.push("Ambient temperature is below safe indoor threshold of 15°C.");
+        care.push("Keep room temperature between 18°C and 26°C.");
+      }
+
+      if (urgentSteps.length === 0) {
+        urgentSteps.push("No immediate emergency action required. Continue standard plant care routine.");
+      }
+
+      // Render Dashboard DOM
+      document.getElementById('diagnosticTag').innerHTML = statusTag;
+      document.getElementById('diagOutput').innerHTML = `<strong>Species:</strong> ${species}<br>${diag}`;
+      document.getElementById('urgentOutput').innerHTML = `<ul>${urgentSteps.map(step => `<li>${step}</li>`).join('')}</ul>`;
+      document.getElementById('causeOutput').innerHTML = `<ul>${causes.map(c => `<li>${c}</li>`).join('')}</ul>`;
+      document.getElementById('careOutput').innerHTML = `<ol>${care.map(c => `<li>${c}</li>`).join('')}</ol>`;
+      
+      document.getElementById('dashboard').style.display = 'block';
+
+      // Build Scripts for Speech Synthesis
+      summaryReportScript = `Plant Health Summary for ${species}. Status: ${statusTagText}. Diagnosis: ${diag}. Immediate action required: ${urgentSteps.join('. ')}.`;
+
+      fullReportScript = `Full Plant Diagnostic Report for ${species}. Health Status: ${statusTagText}. Primary Diagnosis: ${diag}. Immediate Action Protocol: ${urgentSteps.join('. ')}. Risk Factors and Root Causes: ${causes.join('. ')}. Recommended Targeted Care Plan: ${care.map((step, idx) => `Step ${idx + 1},${step}`).join('. ')}.`;
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+  </script>
+</body>
+</html>
